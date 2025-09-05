@@ -20,29 +20,19 @@ import requests
 import toml
 import speedtest
 import pywhatkit
-import numpy as np
-# Defer heavy imports to improve startup time
-# from transformers import AutoProcessor, AutoModelForCausalLM
-# import torch
 import pygetwindow as gw
 import pytz
 from dateutil import parser
 import signal
 import sys
-
-# Pygame mixer will be initialized when needed
-
-# Import our custom modules
 import automation
 from memory_manager import memory
-from emotion_detector import emotion_detector
-from activity_monitor import activity_monitor
-from reminder_system import reminder_system
-from tray_icon import start_tray_icon
 
-tray_thread = start_tray_icon()
+emotion_detector = None
+activity_monitor = None
+reminder_system = None
 
-# Load configuration from TOML file
+# Load configuration from TOML file 
 def load_config():
     try:
         with open('config.toml', 'r') as f:
@@ -72,8 +62,6 @@ user_activity = []
 activity_lock = Lock()  # For thread-safe access to user_activity
 shutdown_flag = False  # Global shutdown flag for clean exit
 
-# Initialize components are already set from imports above
-
 # Debug mode - set to True to enable text input as fallback
 DEBUG_MODE = False
 
@@ -98,7 +86,7 @@ def signal_handler(signum, frame):
     global shutdown_flag
     print("\n\nReceived interrupt signal. Shutting down gracefully...")
     shutdown_flag = True
-    sys.exit(0)
+    # Don't call sys.exit() here to allow proper cleanup
 
 # Register signal handlers
 signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
@@ -762,39 +750,66 @@ def get_text_input():
 # Main function
 def run_jarvis():
     """Main function to run the Jarvis assistant with simple interaction."""
+    global is_awake, last_interaction_time, shutdown_flag
+    is_awake = False
+    last_interaction_time = time.time()
+    shutdown_flag = False
     print("Starting Jarvis...")
-    speak("Hello! I am Jarvis, your personal assistant.")
     
     try:
-        # Initialize pygame mixer
-        pygame.mixer.init()
-        
-        # Start the emotion detector
-        if emotion_detector:
+        # Initialize pygame mixer in the main thread if not already initialized
+        if not pygame.mixer.get_init():
             try:
-                emotion_detector.start()
-                print("Emotion detection started.")
+                pygame.mixer.init()
             except Exception as e:
-                print(f"Warning: Could not start emotion detector: {e}")
+                print(f"Warning: Could not initialize pygame mixer: {e}")
         
-        # Start the activity monitor
-        if activity_monitor:
+        # Import and initialize GUI components in the main thread
+        try:
+            from emotion_detector import EmotionDetector
+            global emotion_detector
             try:
-                activity_monitor.start()
-                print("Activity monitoring started.")
+                emotion_detector = EmotionDetector()
+                print("Emotion detection initialized.")
             except Exception as e:
-                print(f"Warning: Could not start activity monitor: {e}")
+                print(f"Warning: Could not initialize emotion detector: {e}")
+                print("Disabling emotion detection to prevent further errors.")
+                emotion_detector = None
+        except ImportError:
+            print("Warning: Emotion detector module not found. Emotion detection disabled.")
+            emotion_detector = None
         
-        # Start the reminder system
-        if reminder_system:
+        try:
+            from activity_monitor import ActivityMonitor
+            global activity_monitor
             try:
-                reminder_system.start()
-                print("Reminder system started.")
+                activity_monitor = ActivityMonitor()
+                print("Activity monitor initialized.")
             except Exception as e:
-                print(f"Warning: Could not start reminder system: {e}")
+                print(f"Warning: Could not initialize activity monitor: {e}")
+                print("Disabling activity monitoring to prevent further errors.")
+                activity_monitor = None
+        except ImportError:
+            print("Warning: Activity monitor module not found. Activity monitoring disabled.")
+            activity_monitor = None
         
+        try:
+            from reminder_system import ReminderSystem
+            global reminder_system
+            try:
+                reminder_system = ReminderSystem()
+                print("Reminder system initialized.")
+            except Exception as e:
+                print(f"Warning: Could not initialize reminder system: {e}")
+                print("Disabling reminder system to prevent further errors.")
+                reminder_system = None
+        except ImportError:
+            print("Warning: Reminder system module not found. Reminder system disabled.")
+            reminder_system = None
+            
         # Initial greeting
-        print("Jarvis is now active. Say 'Hey Jarvis' to wake me up!")
+        speak("Hello! I am Jarvis, your personal assistant.")
+        print("\nJarvis is now active. Say 'Jarvis' to wake me up!")
         print("Press Ctrl+C to exit.")
         speak("Hello! I am Jarvis, your personal assistant. I'm now online and ready to assist you.")
         
@@ -805,32 +820,37 @@ def run_jarvis():
                 print("\nListening for wake word... (say 'Jarvis')")
                 wake_word_detected = listen_for_wake_word()
                 
-                if wake_word_detected and not shutdown_flag:
-                    speak("Yes sir")
+                if not wake_word_detected or shutdown_flag:
+                    time.sleep(0.1)
+                    continue
                     
-                    # Get user command
-                    print("Listening for command...")
-                    command = get_input("What can I do for you, sir?")
+                # Wake word detected
+                speak("Yes sir")
+                
+                # Get user command
+                print("Listening for command...")
+                command = get_input("What can I do for you, sir?")
+                
+                if not command or shutdown_flag:
+                    continue
                     
-                    if command and command.strip() and not shutdown_flag:
-                        speak("Okay sir")
-                        print(f"Executing: {command}")
-                        
-                        # Process the command
-                        response = process_command(command)
-                        
-                        # Speak the result
-                        if response and response.strip():
-                            speak(f"{response} sir")
-                        else:
-                            speak("Task completed sir")
-                    
-                # Small delay to prevent CPU overload
-                time.sleep(0.1)
+                speak("Okay sir")
+                print(f"Executing: {command}")
+                
+                # Process the command
+                response = process_command(command)
+                
+                # Speak the result
+                if response and response.strip():
+                    speak(f"{response} sir")
+                else:
+                    speak("Task completed sir")
                 
             except KeyboardInterrupt:
-                print("\nShutting down Jarvis...")
+                print("\nShutdown requested. Finishing current operation...")
                 shutdown_flag = True
+                # Don't break immediately to allow current operation to complete
+                time.sleep(0.5)
                 break
                 
             except Exception as e:
@@ -840,29 +860,53 @@ def run_jarvis():
     
     finally:
         # Clean up resources
-        print("Shutting down components...")
+        print("\nShutting down components...")
         
-        # Stop the emotion detector
-        if hasattr(emotion_detector, 'stop'):
-            emotion_detector.stop()
-            print("Emotion detection stopped.")
+        # Stop any playing audio first
+        if pygame.mixer.get_init():
+            try:
+                pygame.mixer.music.fadeout(500)  # Fade out audio
+                pygame.mixer.quit()
+                print("Audio system stopped.")
+            except Exception as e:
+                print(f"Error stopping audio: {e}")
         
-        # Stop the activity monitor
-        if hasattr(activity_monitor, 'stop'):
-            activity_monitor.stop()
-            print("Activity monitoring stopped.")
+        # Set shutdown flag to signal all threads to stop
+        shutdown_flag = True
         
-        # Stop the reminder system
-        if hasattr(reminder_system, 'stop'):
-            reminder_system.stop()
-            print("Reminder system stopped.")
+        # List of components to clean up
+        components = [
+            (emotion_detector, 'Emotion detection'),
+            (activity_monitor, 'Activity monitoring'),
+            (reminder_system, 'Reminder system')
+        ]
+        
+        # Stop all components
+        for component, name in components:
+            if component and hasattr(component, 'stop'):
+                try:
+                    component.stop()
+                    print(f"{name} stopped.")
+                except Exception as e:
+                    print(f"Error stopping {name.lower()}: {e}")
         
         # Save any pending data
-        if hasattr(memory, '_save_memory'):
-            memory._save_memory()
-            print("Memory saved.")
+        try:
+            if hasattr(memory, '_save_memory'):
+                memory._save_memory()
+                print("Memory saved.")
+        except Exception as e:
+            print(f"Error saving memory: {e}")
         
-        print("Goodbye!")
+        # Small delay to allow threads to terminate
+        time.sleep(0.5)
+        
+        # Force exit if we're still running
+        if not shutdown_flag:
+            print("Forcing shutdown...")
+        
+        print("\nGoodbye! Thank you for using Jarvis.")
+        os._exit(0)  # Force exit to ensure all threads are terminated
 
 if __name__ == "__main__":
     run_jarvis()
