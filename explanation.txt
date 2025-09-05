@@ -1,0 +1,175 @@
+# Project Jarvis: Complete Project Overview and Workflow
+
+This document provides a comprehensive explanation of the Jarvis AI Assistant project, its architecture, operational workflow, features, configuration, and security considerations.
+
+---
+
+## 1. Project Goal
+
+Jarvis is a voice-controlled desktop AI assistant inspired by Iron Man's Jarvis. It performs a wide range of tasks based on voice commands, including system control, web automation, answering questions, and general conversation. It leverages multiple external APIs and advanced AI models for its core functionalities.
+
+---
+
+## 2. Core Components & File Structure
+
+- **main.py**: The heart of the application. Handles initialization, wake word detection, command processing, AI integration, and the main event loop.
+- **automation.py**: Contains system automation utilities (volume, brightness, screenshots, app launching, window management, etc.). Used by main.py for executing system-level commands.
+- **musicLibrary.py**: A Python dictionary mapping song titles to YouTube URLs for the music playback feature.
+- **client.py**: Standalone script for testing the OpenAI API. *Security Note: Contains a hardcoded API key—remove before sharing or deploying.*
+- **config.toml**: Stores all sensitive API keys (OpenAI, ElevenLabs, TogetherAI, WolframAlpha) and settings. Keeps secrets out of the main codebase.
+- **requirements.txt**: Lists all Python dependencies required for the project.
+- **api.txt**: Contains a single API key (purpose unclear—avoid storing secrets in plaintext files).
+- **readme.md**: Main documentation, including features, installation, usage, troubleshooting, and contribution guidelines.
+
+---
+
+## 3. Key Technologies & Libraries
+
+- **Speech Recognition**: `speech_recognition` (voice-to-text)
+- **Text-to-Speech (TTS)**: `elevenlabs` (premium), `gTTS` (Google), `pyttsx3` (offline fallback)
+- **AI & NLP**: `openai` (GPT-3.5/4), `togetherai` (intent classification & chat), `wolframalpha` (calculations)
+- **System & Web Control**: `pyautogui`, `screen_brightness_control`, `webbrowser`, `os`, `subprocess`, `pygetwindow`, `pywinauto`, `uiautomation`
+- **Utilities**: `pyjokes`, `wikipedia`, `speedtest-cli`, `pywhatkit`, `langdetect`, `numpy`, `torch`, `transformers`
+
+---
+
+## 4. Execution Workflow
+
+1. **Initialization**: `main.py` loads configuration from `config.toml`, initializes the speech engine, recognizer, and sets up API keys.
+2. **Greeting**: `run_jarvis()` calls `greet_user()` to provide a time-appropriate greeting.
+3. **Main Loop**: Enters an infinite loop, listening for user input via microphone.
+4. **Wake Word Detection**: Listens for the wake word ("Jarvis"). If detected, processes the command; otherwise, remains in standby.
+5. **Command Processing**: 
+    - Uses TogetherAI to classify input as 'command' or 'conversation'.
+    - If 'conversation', generates a response using TogetherAI and speaks it.
+    - If 'command', matches against a large set of predefined patterns (open apps, system control, web search, reminders, etc.).
+6. **Function Execution**: Executes the matched function (system control, web automation, etc.) and provides spoken feedback.
+7. **Speech Synthesis**: Uses ElevenLabs for TTS, falls back to gTTS, then pyttsx3 if needed.
+8. **Exit**: Listens for exit commands ("exit", "goodbye") to terminate the program.
+
+---
+
+## 5. Features
+
+### Voice & AI Capabilities
+- Wake word detection ("Jarvis")
+- Voice input/output with multi-language support
+- Language detection for responses
+- Conversational memory/history
+- GPT-3.5/4 and TogetherAI-powered chat and Q&A
+
+### System Control
+- Volume up/down/mute
+- Screen brightness up/down
+- Take screenshots
+- Lock, sleep, shutdown, restart, log off
+- Open Notepad and other apps
+- Show/hide desktop, empty recycle bin
+
+### Web & App Automation
+- Open Google, YouTube, Spotify, and other apps
+- Play any query on YouTube
+- Web search (Google)
+- Wikipedia summary lookup
+- App installation assistance if not found
+
+### Productivity & Utilities
+- Set reminders and alarms (spoken and printed notifications)
+- Calculations via Wolfram Alpha
+- Internet speed test
+
+### Entertainment
+- Tell jokes (pyjokes)
+- General conversation
+- Static music library (expandable)
+
+---
+
+## 6. Configuration & Security
+
+- **config.toml**: All API keys and settings are stored here. Example structure:
+
+  ```toml
+  [openai]
+  api_key = "..."
+  model = "gpt-3.5-turbo"
+  max_tokens = 200
+  temperature = 0.7
+
+  [elevenlabs]
+  api_key = "..."
+  voice_id = "..."
+  stability = 0.5
+  similarity_boost = 0.75
+
+  [wolframalpha]
+  app_id = "..."
+
+  [settings]
+  max_history = 15
+  hotword = "jarvis"
+  model_provider = "openai"
+  ollama_model = "llama3"
+
+  [togetherai]
+  api_key = "..."
+  model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  ```
+
+- **Security Notes**:
+  - Never commit real API keys to public repositories.
+  - Remove hardcoded keys from `client.py` and `api.txt` before sharing.
+  - Use environment variables or secret managers for production deployments.
+
+---
+
+## 7. Dependencies
+
+All dependencies are listed in `requirements.txt`. Install with:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 8. Usage
+
+1. Start Jarvis:
+   ```bash
+   python main.py
+   ```
+2. Wake Jarvis by saying "Jarvis" or give direct commands.
+3. Example commands:
+   - "Jarvis, open YouTube"
+   - "Jarvis, set a reminder for 5 minutes to check the oven"
+   - "Jarvis, tell me a joke"
+   - "Jarvis, what's the capital of France?"
+   - "Jarvis, increase brightness by 20%"
+
+---
+
+## 9. Troubleshooting
+
+- **Microphone not working**: Check system audio settings, ensure `pyaudio` is installed.
+- **API errors**: Verify API keys in `config.toml` and check account access.
+- **Command not recognized**: Speak clearly and check available commands.
+
+---
+
+## 10. Contribution & License
+
+- Contributions are welcome! See `readme.md` for guidelines.
+- Licensed under the MIT License.
+
+---
+
+## 11. Acknowledgments
+
+- OpenAI for GPT-4 API
+- ElevenLabs for voice synthesis
+- All open-source libraries used
+
+---
+
+**Note:** This project is for educational purposes only. Not affiliated with Marvel or Disney.

@@ -1,0 +1,46 @@
+# Core dependencies
+autopy
+gtts
+keyboard
+langdetect
+mouse
+mss
+numpy
+openai
+pygame
+pyautogui
+pygetwindow
+pyjokes
+pynput
+pymsgbox
+pyperclip
+pyrect
+pyttsx3
+pywhatkit
+pywin32
+pywinauto
+requests
+screen_brightness_control
+speechrecognition
+speedtest-cli
+toml
+torch
+transformers
+uiautomation
+wikipedia
+wolframalpha
+
+moviepy
+
+# New dependencies for enhanced features
+fer==22.5.1              # Facial Emotion Recognition
+opencv-python>=4.5.0     # Computer vision for emotion detection
+opencv-python
+Pillow>=9.0.0           # Image processing
+pytesseract>=0.3.8       # OCR for screen text extraction
+python-dateutil>=2.8.2   # Date parsing and manipulation
+pytz>=2021.3            # Timezone support
+PyQt5>=5.15.0           # For system tray and GUI components
+python-vlc>=3.0.0       # For audio playback
+python-dotenv>=0.19.0   # For environment variable management
+pytest>=6.2.5           # For testing
