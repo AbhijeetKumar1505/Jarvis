@@ -35,32 +35,12 @@ import sys
 # Import our custom modules
 import automation
 from memory_manager import memory
+from emotion_detector import emotion_detector
+from activity_monitor import activity_monitor
+from reminder_system import reminder_system
+from tray_icon import start_tray_icon
 
-# Import optional modules with error handling
-try:
-    from emotion_detector import emotion_detector
-except ImportError:
-    print("Warning: Emotion detector module not available (missing dependencies)")
-    emotion_detector = None
-
-try:
-    from activity_monitor import activity_monitor
-except ImportError:
-    print("Warning: Activity monitor module not available")
-    activity_monitor = None
-
-try:
-    from reminder_system import reminder_system
-except ImportError:
-    print("Warning: Reminder system module not available")
-    reminder_system = None
-
-try:
-    from tray_icon import start_tray_icon
-    tray_thread = start_tray_icon()
-except ImportError:
-    print("Warning: System tray icon not available")
-    tray_thread = None
+tray_thread = start_tray_icon()
 
 # Load configuration from TOML file
 def load_config():
@@ -93,11 +73,6 @@ activity_lock = Lock()  # For thread-safe access to user_activity
 shutdown_flag = False  # Global shutdown flag for clean exit
 
 # Initialize components are already set from imports above
-
-# Microphone enumeration removed to prevent startup hanging
-
-# Set this to the index of your preferred microphone, or None for default
-MICROPHONE_INDEX = 0  # Use the first available microphone
 
 # Debug mode - set to True to enable text input as fallback
 DEBUG_MODE = False
@@ -132,92 +107,41 @@ if hasattr(signal, 'SIGBREAK'):  # Windows Ctrl+Break
 
 # gTTS speech synthesis (primary), pyttsx3 fallback
 def speak(text, lang='en'):
-    """Speak the given text using the best available TTS engine."""
+    """Speak the given text using gTTS and pygame."""
     print(f"Speaking: {text}")
+    
     try:
         # Log this interaction
         memory.add_activity('speech', f'Spoke: {text[:100]}...')
         
-        # Initialize pygame mixer if not already initialized
-        if not pygame.mixer.get_init():
-            try:
-                pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-                print("Pygame mixer initialized successfully")
-            except Exception as e:
-                print(f"Failed to initialize pygame mixer: {e}")
-                # Fall back to pyttsx3 immediately
-                engine.say(text)
-                engine.runAndWait()
-                return
+        # Generate speech with gTTS
+        tts = gTTS(text=text, lang=lang, slow=False)
+        temp_file = 'temp_speech.mp3'
+        tts.save(temp_file)
+
+        # Initialize Pygame mixer
+        pygame.mixer.init()
         
-        # First try ElevenLabs if available
-        if ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID:
-            try:
-                url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
-                headers = {
-                    "xi-api-key": ELEVENLABS_API_KEY,
-                    "Content-Type": "application/json"
-                }
-                data = {
-                    "text": text,
-                    "voice_settings": {
-                        "stability": 0.5,
-                        "similarity_boost": 0.5
-                    }
-                }
-                response = requests.post(url, json=data, headers=headers, timeout=10)
-                if response.status_code == 200:
-                    temp_file = f"temp_audio_{int(time.time())}.mp3"
-                    with open(temp_file, "wb") as f:
-                        f.write(response.content)
-                    
-                    try:
-                        pygame.mixer.music.load(temp_file)
-                        pygame.mixer.music.play()
-                        
-                        # Add timeout to prevent hanging
-                        timeout_start = time.time()
-                        timeout_duration = 30  # 30 seconds timeout
-                        
-                        while pygame.mixer.music.get_busy():
-                            if time.time() - timeout_start > timeout_duration:
-                                print("Warning: Audio playback timed out, forcing stop")
-                                break
-                            pygame.time.Clock().tick(10)
-                        
-                        # Properly stop and wait for music to finish
-                        pygame.mixer.music.stop()
-                        # Give pygame time to fully stop and release file handle
-                        time.sleep(1.0)
-                    finally:
-                        # Ensure cleanup happens even if there's an error
-                        cleanup_attempts = 3
-                        cleanup_delay = 0.5
-                        
-                        for attempt in range(cleanup_attempts):
-                            try:
-                                if os.path.exists(temp_file):
-                                    os.remove(temp_file)
-                                break  # Success, exit the loop
-                            except PermissionError:
-                                if attempt < cleanup_attempts - 1:  # Not the last attempt
-                                    print(f"Warning: Could not delete {temp_file} (file in use), retrying in {cleanup_delay}s...")
-                                    time.sleep(cleanup_delay)
-                                    cleanup_delay *= 2  # Exponential backoff
-                                else:
-                                    print(f"Warning: {temp_file} will need manual cleanup")
-                            except Exception as e:
-                                print(f"Warning: Error during cleanup: {e}")
-                                break
-                    return
-            except Exception as e:
-                print(f"ElevenLabs TTS failed: {e}")
-                # Continue to fallback TTS methods
+        # Load and play the MP3 file
+        pygame.mixer.music.load(temp_file)
+        pygame.mixer.music.play()
+
+        # Wait for the audio to finish playing
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+            
+    except Exception as e:
+        print(f"Error in speak function: {e}")
         
-        # Fallback to gTTS
-        try:
-            tts = gTTS(text=text, lang=lang, slow=False)
-            temp_file = f"temp_audio_{int(time.time())}.mp3"
+    finally:
+        # Cleanup
+        if 'temp_file' in locals() and os.path.exists(temp_file):
+            try:
+                pygame.mixer.music.stop()
+                pygame.mixer.quit()
+                os.remove(temp_file)
+            except Exception as e:
+                print(f"Error during cleanup: {e}")
             tts.save(temp_file)
             
             try:
@@ -258,19 +182,16 @@ def speak(text, lang='en'):
                     except Exception as e:
                         print(f"Warning: Error during cleanup: {e}")
                         break
-        except Exception as e:
-            print(f"gTTS error: {e}")
+                    except Exception as e:
+                        print(f"gTTS error: {e}")
             # Ultimate fallback to pyttsx3
             try:
                 engine.say(text)
                 engine.runAndWait()
             except Exception as e2:
                 print(f"pyttsx3 error: {e2}")
-    except Exception as e:
-        print(f"Speech error: {e}")
-    finally:
-        pygame.mixer.music.unload()
-        os.remove("temp.mp3")
+            except Exception as e:
+                print(f"Speech error: {e}")
 
 # Language detection
 def detect_language(text):
@@ -773,36 +694,16 @@ def listen_for_wake_word():
     Listens for the wake word 'hey jarvis' (case-insensitive).
     Returns True if detected, False otherwise.
     """
-    global shutdown_flag
-    
-    # Check shutdown flag first
     if shutdown_flag:
         return False
         
     try:
-        # Use a specific microphone index if available, otherwise default
-        mic_index = MICROPHONE_INDEX if MICROPHONE_INDEX is not None else 0
-        
-        # Create microphone object with timeout
-        try:
-            mic = sr.Microphone(device_index=mic_index)
-        except OSError as e:
-            print(f"\nMicrophone access error: {e}")
-            return False
-        
-        with mic as source:
-            # Set basic speech recognition parameters
+        with sr.Microphone() as source:
             recognizer.pause_threshold = 0.5
             recognizer.energy_threshold = 300
-            recognizer.dynamic_energy_threshold = False
             
             try:
-                # Use shorter timeout for better responsiveness
-                audio = recognizer.listen(
-                    source, 
-                    timeout=1,  # Shorter timeout for better responsiveness
-                    phrase_time_limit=3  # Shorter phrase limit
-                )
+                audio = recognizer.listen(source, timeout=1, phrase_time_limit=3)
                 
                 # Check shutdown flag before processing
                 if shutdown_flag:
@@ -860,12 +761,13 @@ def get_text_input():
 
 # Main function
 def run_jarvis():
-    """Main function to run the Jarvis assistant."""
+    """Main function to run the Jarvis assistant with simple interaction."""
     print("Starting Jarvis...")
+    speak("Hello! I am Jarvis, your personal assistant.")
     
     try:
-        # Initialize components with timeout handling
-        print("Initializing components...")
+        # Initialize pygame mixer
+        pygame.mixer.init()
         
         # Start the emotion detector
         if emotion_detector:
@@ -891,144 +793,50 @@ def run_jarvis():
             except Exception as e:
                 print(f"Warning: Could not start reminder system: {e}")
         
-        # Test microphone access
-        print("Testing microphone access...")
-        try:
-            with sr.Microphone(device_index=MICROPHONE_INDEX) as source:
-                print(f"Microphone test successful. Using device: {MICROPHONE_INDEX}")
-                recognizer.adjust_for_ambient_noise(source, duration=0.5)
-                print("Ambient noise calibration complete.")
-        except Exception as e:
-            print(f"Warning: Microphone test failed: {e}")
-            print("You may need to use text input mode.")
-        
         # Initial greeting
         print("Jarvis is now active. Say 'Hey Jarvis' to wake me up!")
         print("Press Ctrl+C to exit.")
         speak("Hello! I am Jarvis, your personal assistant. I'm now online and ready to assist you.")
         
-        # Add a counter to show the program is alive
-        loop_counter = 0
-        last_status_time = time.time()
-        consecutive_errors = 0
-        voice_mode = True  # Start with voice mode
-        
-        # Start listening in a loop
+        # Main interaction loop
         while not shutdown_flag:
             try:
-                loop_counter += 1
-                
-                # Check shutdown flag regularly
-                if shutdown_flag:
-                    print("\nShutdown flag detected. Exiting...")
-                    break
-                
-                # Show periodic status to confirm the program is running
-                current_time = time.time()
-                if current_time - last_status_time > 30:  # Every 30 seconds
-                    print(f"\n[Status] Jarvis is active - Loop #{loop_counter}")
-                    last_status_time = current_time
-                
-                # Check if we should switch to text mode due to errors
-                if consecutive_errors >= 5:
-                    print(f"\n\nToo many voice recognition errors ({consecutive_errors}). Switching to text mode.")
-                    print("Type 'voice' to try voice mode again, or 'quit' to exit.")
-                    voice_mode = False
-                    consecutive_errors = 0
-                
-                if voice_mode:
-                    # Listen for the wake word with timeout
-                    if loop_counter % 100 == 0:  # Show status less frequently
-                        print(f"\r[{loop_counter}] Listening...", end="", flush=True)
-                    
-                    wake_word_detected = listen_for_wake_word()
-                    
-                    # Check shutdown flag after listening
-                    if shutdown_flag:
-                        break
-                        
-                else:
-                    # Text input mode
-                    print(f"\n[{loop_counter}] Text mode - waiting for input...")
-                    try:
-                        command = get_text_input()
-                        
-                        if command == 'quit':
-                            print("Exiting Jarvis...")
-                            shutdown_flag = True
-                            break
-                        elif command == 'voice':
-                            print("Switching back to voice mode...")
-                            voice_mode = True
-                            consecutive_errors = 0
-                            continue
-                        elif command:
-                            # Process text command directly
-                            print(f"Processing text command: {command}")
-                            response = process_command(command)
-                            if response and response.strip():
-                                speak(response)
-                            print("\nWaiting for next command...")
-                    except KeyboardInterrupt:
-                        print("\nExiting text mode...")
-                        shutdown_flag = True
-                        break
-                    continue
+                # Wait for user to say "Jarvis"
+                print("\nListening for wake word... (say 'Jarvis')")
+                wake_word_detected = listen_for_wake_word()
                 
                 if wake_word_detected and not shutdown_flag:
-                    print("\n" + "="*50)
-                    print("WAKE WORD DETECTED!")
-                    print("="*50)
-                    consecutive_errors = 0  # Reset error counter on success
+                    speak("Yes sir")
                     
-                    try:
-                        # Wake word detected, listen for command
-                        command = get_input("What can I do for you, sir?")
+                    # Get user command
+                    print("Listening for command...")
+                    command = get_input("What can I do for you, sir?")
+                    
+                    if command and command.strip() and not shutdown_flag:
+                        speak("Okay sir")
+                        print(f"Executing: {command}")
                         
-                        if shutdown_flag:
-                            break
-                            
-                        if command and command.strip():
-                            print(f"Processing command: {command}")
-                            # Process the command and get a response
-                            response = process_command(command)
-                            
-                            # Speak the response if not empty
-                            if response and response.strip():
-                                speak(response)
-                            else:
-                                print("No response generated.")
+                        # Process the command
+                        response = process_command(command)
+                        
+                        # Speak the result
+                        if response and response.strip():
+                            speak(f"{response} sir")
                         else:
-                            print("No command received.")
-                            speak("I didn't catch that. Please try again.")
-                    except KeyboardInterrupt:
-                        print("\nCommand processing interrupted...")
-                        shutdown_flag = True
-                        break
+                            speak("Task completed sir")
                     
-                    print("\nReturning to wake word detection...")
-                    
-                # Small delay to prevent overwhelming the CPU, but check shutdown flag
-                for i in range(10):  # 0.1 second total, but check shutdown every 0.01s
-                    if shutdown_flag:
-                        break
-                    time.sleep(0.01)
-                            
+                # Small delay to prevent CPU overload
+                time.sleep(0.1)
+                
             except KeyboardInterrupt:
-                print("\n\nKeyboard interrupt received. Shutting down Jarvis...")
+                print("\nShutting down Jarvis...")
                 shutdown_flag = True
                 break
-            except Exception as e:
-                consecutive_errors += 1
-                print(f"\nAn error occurred in main loop: {e}")
-                print(f"Error count: {consecutive_errors}")
-                print("Continuing...")
-                time.sleep(1)  # Prevent tight loop on errors
                 
-                if consecutive_errors >= 10:  # Exit after too many consecutive errors
-                    print("Too many consecutive errors. Exiting...")
-                    shutdown_flag = True
-                    break
+            except Exception as e:
+                print(f"Error: {e}")
+                speak("I encountered an error, sir")
+                time.sleep(1)
     
     finally:
         # Clean up resources

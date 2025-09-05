@@ -2,137 +2,49 @@
   {
     "title": "Jarvis - Windsurf - main.py",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T16:59:36.783344",
-    "screenshot_path": "activity_data\\screenshot_20250905_165916_870359.png",
+    "timestamp": "2025-09-05T18:09:54.312278",
+    "screenshot_path": "activity_data\\screenshot_20250905_180954_097874.png",
     "extracted_text": "",
-    "duration": 560.1947555541992
-  },
-  {
-    "title": "Jarvis - Windsurf - .gitignore",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:08:37.426698",
-    "screenshot_path": "activity_data\\screenshot_20250905_170837_126706.png",
-    "extracted_text": "",
-    "duration": 50.57406997680664
-  },
-  {
-    "title": "Jarvis - Windsurf - main.py",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:09:27.853964",
-    "screenshot_path": "activity_data\\screenshot_20250905_170927_662918.png",
-    "extracted_text": "",
-    "duration": 15.421989440917969
-  },
-  {
-    "title": "Windsurf",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:09:43.113864",
-    "screenshot_path": "activity_data\\screenshot_20250905_170943_060170.png",
-    "extracted_text": "",
-    "duration": 5.258806943893433
+    "duration": 740.5272400379181
   },
   {
     "title": "WhatsApp",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:09:48.415187",
-    "screenshot_path": "activity_data\\screenshot_20250905_170948_318653.png",
+    "timestamp": "2025-09-05T18:22:15.212907",
+    "screenshot_path": "activity_data\\screenshot_20250905_182214_725101.png",
     "extracted_text": "",
-    "duration": 210.31942486763
+    "duration": 5.793694019317627
   },
   {
     "title": "Jarvis - Windsurf - main.py",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:13:18.934998",
-    "screenshot_path": "activity_data\\screenshot_20250905_171318_670386.png",
+    "timestamp": "2025-09-05T18:22:20.635335",
+    "screenshot_path": "activity_data\\screenshot_20250905_182220_419820.png",
     "extracted_text": "",
-    "duration": 5.502513885498047
+    "duration": 480.49848675727844
   },
   {
-    "title": "Windsurf",
+    "title": "Instagram",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:13:24.209045",
-    "screenshot_path": "activity_data\\screenshot_20250905_171324_142824.png",
+    "timestamp": "2025-09-05T18:30:21.221701",
+    "screenshot_path": "activity_data\\screenshot_20250905_183021_002015.png",
     "extracted_text": "",
-    "duration": 5.275810480117798
+    "duration": 385.55226039886475
   },
   {
-    "title": "Jarvis - Windsurf - COMMIT_EDITMSG",
+    "title": "Instagram - (1) Instagram",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:13:29.570451",
-    "screenshot_path": "activity_data\\screenshot_20250905_171329_421048.png",
+    "timestamp": "2025-09-05T18:36:47.261799",
+    "screenshot_path": "activity_data\\screenshot_20250905_183646_873510.png",
     "extracted_text": "",
-    "duration": 15.388238668441772
+    "duration": 5.996647119522095
   },
   {
-    "title": "Jarvis - Windsurf - main.py",
+    "title": "Instagram",
     "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:13:45.091333",
-    "screenshot_path": "activity_data\\screenshot_20250905_171344_864101.png",
+    "timestamp": "2025-09-05T18:36:52.690221",
+    "screenshot_path": "activity_data\\screenshot_20250905_183652_484287.png",
     "extracted_text": "",
-    "duration": 25.493488550186157
-  },
-  {
-    "title": "Jarvis - Windsurf - activity_log.json",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:10.440346",
-    "screenshot_path": "activity_data\\screenshot_20250905_171410_298144.png",
-    "extracted_text": "",
-    "duration": 25.348233938217163
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250805_001858_235541.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:35.816256",
-    "screenshot_path": "activity_data\\screenshot_20250905_171435_647355.png",
-    "extracted_text": "",
-    "duration": 5.374624967575073
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250905_171329_421048.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:41.159893",
-    "screenshot_path": "activity_data\\screenshot_20250905_171441_021491.png",
-    "extracted_text": "",
-    "duration": 5.343479156494141
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250905_170927_662918.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:46.547534",
-    "screenshot_path": "activity_data\\screenshot_20250905_171446_364638.png",
-    "extracted_text": "",
-    "duration": 5.387491941452026
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250905_165916_870359.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:51.989525",
-    "screenshot_path": "activity_data\\screenshot_20250905_171451_752154.png",
-    "extracted_text": "",
-    "duration": 5.442828893661499
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250905_171446_364638.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:14:57.334246",
-    "screenshot_path": "activity_data\\screenshot_20250905_171457_194759.png",
-    "extracted_text": "",
-    "duration": 10.345422267913818
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250905_171329_421048.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:15:07.695415",
-    "screenshot_path": "activity_data\\screenshot_20250905_171507_540132.png",
-    "extracted_text": "",
-    "duration": 5.359830617904663
-  },
-  {
-    "title": "Jarvis - Windsurf - screenshot_20250805_001858_235541.png",
-    "app_name": "Unknown",
-    "timestamp": "2025-09-05T17:15:13.118254",
-    "screenshot_path": "activity_data\\screenshot_20250905_171512_903207.png",
-    "extracted_text": "",
-    "duration": 5.423495292663574
+    "duration": 15.429018259048462
   }
 ]
