@@ -6,5 +6,45 @@
     "screenshot_path": "activity_data\\screenshot_20250905_165916_870359.png",
     "extracted_text": "",
     "duration": 560.1947555541992
+  },
+  {
+    "title": "Jarvis - Windsurf - .gitignore",
+    "app_name": "Unknown",
+    "timestamp": "2025-09-05T17:08:37.426698",
+    "screenshot_path": "activity_data\\screenshot_20250905_170837_126706.png",
+    "extracted_text": "",
+    "duration": 50.57406997680664
+  },
+  {
+    "title": "Jarvis - Windsurf - main.py",
+    "app_name": "Unknown",
+    "timestamp": "2025-09-05T17:09:27.853964",
+    "screenshot_path": "activity_data\\screenshot_20250905_170927_662918.png",
+    "extracted_text": "",
+    "duration": 15.421989440917969
+  },
+  {
+    "title": "Windsurf",
+    "app_name": "Unknown",
+    "timestamp": "2025-09-05T17:09:43.113864",
+    "screenshot_path": "activity_data\\screenshot_20250905_170943_060170.png",
+    "extracted_text": "",
+    "duration": 5.258806943893433
+  },
+  {
+    "title": "WhatsApp",
+    "app_name": "Unknown",
+    "timestamp": "2025-09-05T17:09:48.415187",
+    "screenshot_path": "activity_data\\screenshot_20250905_170948_318653.png",
+    "extracted_text": "",
+    "duration": 210.31942486763
+  },
+  {
+    "title": "Jarvis - Windsurf - main.py",
+    "app_name": "Unknown",
+    "timestamp": "2025-09-05T17:13:18.934998",
+    "screenshot_path": "activity_data\\screenshot_20250905_171318_670386.png",
+    "extracted_text": "",
+    "duration": 5.502513885498047
   }
 ]
